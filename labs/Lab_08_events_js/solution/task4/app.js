@@ -1,13 +1,19 @@
-const inputs = document.querySelectorAll("input");
-const bkg = document.querySelector(".main__box-right");
+const inputFirst = document.getElementById("first_inp");
+const inputSecond = document.getElementById("second_inp");
+const inputThird = document.getElementById("third_inp");
+const bkg = document.getElementsByClassName("main__box-right");
 const spans = document.querySelectorAll("span");
+const inputs = document.querySelectorAll("input");
 const colorContainer = document.getElementById("colorContainer");
 const generateBtn = document.getElementById("generate__btn");
 
 let red = 0;
 let green = 0;
 let blue = 0;
-const MAX_COLOR_BLOCKS = 15;
+
+if (localStorage.getItem('selectedColor')) {
+    localStorage.setItem("selectedColor", null);
+}
 
 colorContainer.addEventListener("click", (event) => {
   const clickedColorBlock = event.target.closest(".color__block");
@@ -18,42 +24,22 @@ colorContainer.addEventListener("click", (event) => {
   }
 });
 
-function updateColor() {
-  bkg.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
-}
-
-function createColorBlock() {
-  const colorBlock = document.createElement("div");
-  colorBlock.classList.add("color__block");
-  colorContainer.prepend(colorBlock);
-  colorBlock.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
-
-  const colorBlocks = document.querySelectorAll(".color__block");
-  if (colorBlocks.length > MAX_COLOR_BLOCKS) {
-    colorContainer.removeChild(colorBlocks[colorBlocks.length - 1]);
-  }
-}
-
 inputs.forEach((input, index) => {
-  input.addEventListener("input", () => {
-    const label = input.closest(".box__left-control").querySelector("label");
-    const inputValue = +input.value;
-
-    if (inputValue >= 0 && inputValue <= 255) {
+  input.addEventListener("input", (event) => {
+    let label = input.closest(".box__left-control").querySelector("label");
+    if (input.value >= 0 && input.value <= 255) {
       input.style.borderColor = "green";
-      switch (label.innerText) {
-        case "red":
-          red = inputValue;
-          break;
-        case "green":
-          green = inputValue;
-          break;
-        case "blue":
-          blue = inputValue;
-          break;
+      const color = event.target.dataset['color'];
+      console.log(color);
+      if (color == "red") {
+        red = +input.value;
+      } else if (label.innerText == "green") {
+        green = +input.value;
+      } else {
+        blue = +input.value;
       }
       spans[index].style.visibility = "hidden";
-      updateColor();
+      bkg[0].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
     } else {
       input.style.borderColor = "red";
       spans[index].style.visibility = "visible";
@@ -61,7 +47,17 @@ inputs.forEach((input, index) => {
   });
 });
 
-generateBtn.addEventListener("click", createColorBlock);
+generateBtn.addEventListener("click", () => {
+  const colorBlock = document.createElement("div");
+  colorBlock.classList.add("color__block");
+  colorContainer.prepend(colorBlock);
+  colorBlock.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+
+  let colorBlocks = document.querySelectorAll(".color__block");
+  if (colorBlocks.length > 15) {
+    colorContainer.removeChild(colorBlocks[colorBlocks.length - 1]);
+  }
+});
 
 document.addEventListener("click", (event) => {
   const selectedColor = localStorage.getItem("selectedColor");
@@ -71,7 +67,7 @@ document.addEventListener("click", (event) => {
       target !== colorContainer &&
       target !== generateBtn &&
       !colorContainer.contains(target) &&
-      target !== bkg
+      target !== bkg[0]
     ) {
       target.style.backgroundColor = selectedColor;
     }
